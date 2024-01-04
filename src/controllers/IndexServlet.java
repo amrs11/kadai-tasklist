@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.List;
 
 import javax.persistence.EntityManager;
+import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
@@ -33,10 +34,15 @@ public class IndexServlet extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         EntityManager em = DBUtil.createEntityManager();
 
+        // emがDBから取得したデータ（Model経由でset/get）をList：tasksに格納
         List<Task> tasks = em.createNamedQuery("getAllTasks",Task.class).getResultList();
-        response.getWriter().append(Integer.valueOf(tasks.size()).toString());
 
-        em.close();
+        em.close(); //DBとのやりとりが終わったのでemをclose
+
+        request.setAttribute("tasks",tasks); // リクエストスコープに上記データを置(1回のページ遷移間のみ保持される)
+
+        RequestDispatcher rd = request.getRequestDispatcher("/WEB-INF/views/tasks/index.jsp");
+        rd.forward(request, response); // jsp(ビュー)にデータを渡す
     }
 
 }
